@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ZODIAC CLOCK — πάντα ῥεῖ</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600;900&family=Noto+Serif+JP:wght@300;400&display=swap');
+
+:root {
+  --gold: #c9a84c;
+  --gold-bright: #f0d080;
+  --gold-dark: #7a5c1e;
+  --gold-glow: #e8c060;
+  --gold-pale: #fff0b8;
+  --cream: #f5e6c8;
+  --deep-navy: #050a18;
+  --midnight: #080d20;
+  --stone: #8a7a5a;
+  --stone-light: #b0a070;
+  --bronze: #8a5d18;
+  --ember: #ff8a3d;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  background: var(--deep-navy);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: 'Cinzel', serif;
+  color: var(--gold-bright);
+}
+
+/* ─── STAR FIELD ─── */
+#starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ─── MILKY WAY ─── */
+.milky-way {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse 40% 80% at 50% 30%, rgba(80,100,200,0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 20% 60% at 48% 20%, rgba(120,140,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 30% 10%, rgba(60,80,160,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* ─── CONSTELLATIONS ─── */
+.constellation-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ─── MOON ─── */
+.moon {
+  position: fixed;
+  top: 3%;
+  right: 6%;
+  width: 70px;
+  height: 70px;
+  z-index: 3;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f0e8c0 0%, #c8b870 40%, #6a5820 100%);
+  box-shadow:
+    0 0 30px 10px rgba(220,190,80,0.3),
+    inset -15px -5px 20px rgba(0,0,0,0.5);
+  animation: moonGlow 4s ease-in-out infinite alternate;
+}
+@keyframes moonGlow {
+  from {
+    box-shadow:
+      0 0 30px 10px rgba(220,190,80,0.3),
+      inset -15px -5px 20px rgba(0,0,0,0.5);
+  }
+  to {
+    box-shadow:
+      0 0 50px 20px rgba(220,190,80,0.5),
+      inset -15px -5px 20px rgba(0,0,0,0.5);
+  }
+}
+.moon::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,220,0.4), transparent 50%);
+}
+
+/* ─── SCENE WRAPPER ─── */
+.scene {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+/* ─── CLOCK CONTAINER ─── */
+.clock-wrap {
+  position: relative;
+  width: min(680px, 92vw);
+  height: min(680px, 92vw);
+}
+
+/* ─── OUTER PEDESTAL ─── */
+.pedestal {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 78%;
+  height: 70px;
+  background: linear-gradient(180deg, #a08840 0%, #705a20 40%, #4a3a10 100%);
+  border-radius: 4px 4px 8px 8px;
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.8),
+    inset 0 2px 0 rgba(255,220,100,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 5;
+}
+.pedestal-text {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(14px, 2.5vw, 20px);
+  color: var(--gold-bright);
+  letter-spacing: 0.15em;
+  text-shadow:
+    0 0 15px rgba(240,200,80,0.8),
+    0 2px 4px rgba(0,0,0,0.9);
+}
+.pedestal-sub {
+  font-family: 'Noto Serif JP', serif;
+  font-size: clamp(10px, 1.8vw, 14px);
+  color: rgba(240,200,100,0.72);
+  letter-spacing: 0.3em;
+}
+
+/* ─── ZODIAC DISK ─── */
+.zodiac-disk {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, #2a2010 0%, #1a1408 40%, #0e0c06 100%);
+  box-shadow:
+    0 0 0 4px var(--gold-dark),
+    0 0 0 8px rgba(120,90,20,0.4),
+    0 20px 80px rgba(0,0,0,0.9),
+    0 0 60px rgba(180,140,40,0.2),
+    inset 0 2px 4px rgba(200,160,60,0.3);
+  overflow: hidden;
+  animation: clockGlow 4s ease-in-out infinite;
+}
+
+@keyframes clockGlow {
+  0%,100% {
+    box-shadow:
+      0 0 0 4px var(--gold-dark),
+      0 0 0 8px rgba(120,90,20,0.4),
+      0 20px 80px rgba(0,0,0,0.9),
+      0 0 60px rgba(180,140,40,0.2),
+      inset 0 2px 4px rgba(200,160,60,0.3);
+  }
+  50% {
+    box-shadow:
+      0 0 0 4px var(--gold-dark),
+      0 0 0 8px rgba(120,90,20,0.4),
+      0 20px 80px rgba(0,0,0,0.9),
+      0 0 90px rgba(180,140,40,0.4),
+      inset 0 2px 4px rgba(200,160,60,0.3);
+  }
+}
+
+/* ─── CLOCK SVG ─── */
+.clock-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ─── CLOCK FACE CENTER ─── */
+.clock-face {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 40% 35%, #d4a840 0%, #9a7020 30%, #6a4e14 60%, #3a2a08 100%);
+  box-shadow:
+    0 0 0 3px var(--gold-dark),
+    0 0 0 6px rgba(180,130,30,0.3),
+    inset 0 0 30px rgba(0,0,0,0.6),
+    0 0 40px rgba(200,160,50,0.3);
+}
+.clock-face::after {
+  content: '';
+  position: absolute;
+  inset: 5%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(180,140,60,0.1) 0%, transparent 70%),
+    repeating-conic-gradient(
+      rgba(0,0,0,0.05) 0deg,
+      transparent 1deg,
+      transparent 29deg,
+      rgba(0,0,0,0.05) 30deg
+    );
+  border: 1px solid rgba(200,160,50,0.2);
+}
+
+/* ─── HANDS / SUNDIAL CORE ─── */
+.hands-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sundial-core {
+  position: absolute;
+  inset: 0;
+}
+
+/* 中心から広がる聖なる光輪 */
+.gnomon-aura {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 88px;
+  height: 88px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle,
+      rgba(255,245,190,0.95) 0%,
+      rgba(240,200,90,0.55) 28%,
+      rgba(180,120,30,0.18) 55%,
+      transparent 75%);
+  box-shadow:
+    0 0 26px rgba(240,200,90,0.55),
+    0 0 54px rgba(240,200,90,0.18);
+  z-index: 18;
+}
+
+/* 中央の神聖な放射光 */
+.solar-rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 46%;
+  height: 46%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  z-index: 17;
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255,228,130,0.22) 0deg 3deg,
+      rgba(255,228,130,0.0) 3deg 15deg
+    );
+  filter: blur(1.5px);
+  opacity: 0.65;
+  animation: slowRotate 36s linear infinite;
+  mask: radial-gradient(circle, transparent 0 24%, #000 42%, transparent 74%);
+  -webkit-mask: radial-gradient(circle, transparent 0 24%, #000 42%, transparent 74%);
+}
+
+@keyframes slowRotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* 時針の代わり：日時計の影 */
+.hour-shadow {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 12px;
+  height: 27%;
+  margin-left: -6px;
+  transform-origin: bottom center;
+  clip-path: polygon(50% 0%, 88% 14%, 100% 100%, 0 100%, 12% 14%);
+  background: linear-gradient(
+    to top,
+    rgba(16,10,4,0.96) 0%,
+    rgba(34,22,8,0.9) 38%,
+    rgba(88,60,16,0.42) 72%,
+    rgba(255,235,180,0) 100%
+  );
+  filter: blur(0.35px);
+  box-shadow:
+    0 0 10px rgba(0,0,0,0.45),
+    0 0 16px rgba(120,90,20,0.18);
+  z-index: 19;
+  transition: transform 0.6s cubic-bezier(0.4, 2.0, 0.3, 1);
+}
+
+/* 分針の代わり：黄金聖槍 */
+.minute-solar {
+  position: absolute;
+  bottom: 50%;
+  left: 50%;
+  width: 8px;
+  height: 35%;
+  margin-left: -4px;
+  transform-origin: bottom center;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(
+    to top,
+    #6b470d 0%,
+    #b88218 22%,
+    #e7bc48 48%,
+    #fff1a8 78%,
+    #ffffff 100%
+  );
+  box-shadow:
+    0 0 8px rgba(255,220,120,0.9),
+    0 0 22px rgba(255,210,90,0.35);
+  z-index: 23;
+  transition: transform 0.35s ease;
+}
+
+.minute-solar::before,
+.minute-solar::after {
+  content: '';
+  position: absolute;
+  bottom: 12%;
+  width: 16px;
+  height: 26px;
+  background: linear-gradient(to bottom, #fff0a8 0%, #d6a83a 50%, #7a5311 100%);
+  box-shadow: 0 0 8px rgba(240,200,90,0.25);
+  opacity: 0.95;
+}
+
+.minute-solar::before {
+  left: -14px;
+  clip-path: polygon(100% 0%, 18% 34%, 76% 100%, 100% 78%);
+  transform: rotate(-16deg);
+}
+
+.minute-solar::after {
+  right: -14px;
+  clip-path: polygon(0% 0%, 82% 34%, 24% 100%, 0% 78%);
+  transform: rotate(16deg);
+}
+
+/* 穂先 */
+.minute-solar-tip {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 18px;
+  height: 22px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0%, 90% 60%, 50% 100%, 10% 60%);
+  background: linear-gradient(to bottom, #ffffff 0%, #ffe89a 35%, #d09a28 80%, #73460b 100%);
+  box-shadow:
+    0 0 10px rgba(255,230,160,0.6),
+    0 0 18px rgba(240,180,60,0.18);
+}
+
+/* 秒針の代わり：軌道 */
+.second-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 54%;
+  height: 54%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+  z-index: 24;
+}
+
+.second-orbit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(200,160,60,0.18);
+  box-shadow:
+    0 0 12px rgba(200,160,60,0.08),
+    inset 0 0 12px rgba(255,220,120,0.04);
+}
+
+.second-orbit-dot {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6d0 0%, #f8cc68 36%, #d2871d 72%, #7a3008 100%);
+  box-shadow:
+    0 0 10px rgba(255,180,70,0.95),
+    0 0 24px rgba(255,120,40,0.32);
+}
+
+/* 日時計の立針 */
+.gnomon-spire {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 28px;
+  height: 150px;
+  transform: translate(-50%, -88%);
+  clip-path: polygon(50% 0%, 88% 100%, 12% 100%);
+  background: linear-gradient(
+    90deg,
+    #4c3409 0%,
+    #8b6517 22%,
+    #f0cf72 50%,
+    #bd8d25 72%,
+    #57390b 100%
+  );
+  box-shadow:
+    0 0 14px rgba(240,200,90,0.35),
+    inset 0 0 10px rgba(255,255,220,0.28),
+    inset -6px 0 10px rgba(60,35,0,0.35);
+  z-index: 26;
+}
+
+.gnomon-spire::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 16px;
+  width: 3px;
+  height: calc(100% - 28px);
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, rgba(255,255,220,0.9), rgba(255,255,220,0));
+  opacity: 0.65;
+}
+
+.gnomon-spire::after {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  width: 22px;
+  height: 18px;
+  transform: translateX(-50%);
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  background: linear-gradient(to bottom, #fff4bc, #c69424 70%, #6b4208);
+  box-shadow: 0 0 10px rgba(255,220,100,0.28);
+}
+
+/* 中心の太陽印 */
+.sun-seal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff8dd 0%, #f0cb6d 36%, #b87e18 70%, #58340b 100%);
+  box-shadow:
+    0 0 14px rgba(255,215,120,0.95),
+    0 0 30px rgba(240,180,70,0.26);
+  z-index: 30;
+}
+
+.sun-seal::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1px solid rgba(240,200,90,0.35);
+  box-shadow: 0 0 8px rgba(240,200,90,0.15);
+}
+
+.sun-seal::after {
+  content: '';
+  position: absolute;
+  inset: -18px;
+  border-radius: 50%;
+  border: 1px dashed rgba(240,200,90,0.16);
+}
+
+/* ─── DATE ─── */
+.date-display {
+  margin-top: 80px;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(10px, 1.5vw, 13px);
+  color: rgba(200,160,60,0.76);
+  letter-spacing: 0.42em;
+  text-shadow: 0 0 10px rgba(180,140,40,0.5);
+  text-align: center;
+}
+
+/* ─── CONSTELLATION LABELS ─── */
+.const-label {
+  position: fixed;
+  font-family: 'Cinzel', serif;
+  font-size: clamp(9px, 1.2vw, 12px);
+  color: rgba(180,200,255,0.75);
+  letter-spacing: 0.1em;
+  text-shadow:
+    0 0 12px rgba(100,150,255,0.8),
+    0 0 4px rgba(200,220,255,0.9);
+  z-index: 4;
+  pointer-events: none;
+  animation: twinkleLabel 3s ease-in-out infinite alternate;
+}
+@keyframes twinkleLabel {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+/* 補助光 */
+.horizon-glow {
+  position: fixed;
+  bottom: -10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1000px, 120vw);
+  height: 240px;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center,
+      rgba(240,180,70,0.16) 0%,
+      rgba(240,180,70,0.06) 35%,
+      transparent 70%);
+  filter: blur(18px);
+}
+
+@media (max-width: 640px) {
+  .moon { width: 52px; height: 52px; top: 4%; right: 5%; }
+  .date-display { margin-top: 72px; letter-spacing: 0.26em; }
+  .gnomon-spire { height: 120px; width: 24px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="milky-way"></div>
+<div class="horizon-glow"></div>
+
+<!-- Constellation SVG layer -->
+<svg class="constellation-layer" viewBox="0 0 1000 800" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <filter id="starGlow">
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="lineGlow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Aries -->
+  <g opacity="0.5" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="760,120 780,100 800,115 785,130"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="760" cy="120" r="2.5"/><circle cx="780" cy="100" r="2"/><circle cx="800" cy="115" r="2"/><circle cx="785" cy="130" r="1.5"/>
+  </g>
+
+  <!-- Taurus -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="120,180 145,165 170,175 155,200 130,210"/>
+    <line x1="145" y1="165" x2="160" y2="148"/>
+    <line x1="145" y1="165" x2="132" y2="150"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="120" cy="180" r="2.5"/><circle cx="145" cy="165" r="3"/><circle cx="170" cy="175" r="2"/><circle cx="155" cy="200" r="1.5"/><circle cx="130" cy="210" r="2"/>
+  </g>
+
+  <!-- Gemini -->
+  <g opacity="0.5" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="200,90 215,75 215,60 200,50"/>
+    <polyline points="230,90 240,75 240,60 228,50"/>
+    <line x1="200" y1="90" x2="230" y2="90"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="200" cy="90" r="2.5"/><circle cx="215" cy="75" r="2"/><circle cx="215" cy="60" r="2"/><circle cx="200" cy="50" r="2.5"/>
+    <circle cx="230" cy="90" r="2.5"/><circle cx="240" cy="75" r="2"/><circle cx="240" cy="60" r="2"/><circle cx="228" cy="50" r="2.5"/>
+  </g>
+
+  <!-- Leo -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="380,110 400,90 425,85 445,95 440,115 415,120 400,110 380,110"/>
+    <line x1="415" y1="120" x2="418" y2="145"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="380" cy="110" r="2"/><circle cx="400" cy="90" r="2"/><circle cx="425" cy="85" r="3"/><circle cx="445" cy="95" r="2"/>
+    <circle cx="440" cy="115" r="2"/><circle cx="415" cy="120" r="2"/><circle cx="418" cy="145" r="2"/>
+  </g>
+
+  <!-- Virgo -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="660,170 680,155 700,165 690,185 670,190 660,170"/>
+    <line x1="700" y1="165" x2="720" y2="155"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="660" cy="170" r="2"/><circle cx="680" cy="155" r="2.5"/><circle cx="700" cy="165" r="2"/><circle cx="690" cy="185" r="2"/><circle cx="670" cy="190" r="2"/><circle cx="720" cy="155" r="2"/>
+  </g>
+
+  <!-- Scorpio -->
+  <g opacity="0.5" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="820,160 840,150 860,155 875,170 870,190 850,200 840,215 850,228 840,235"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="820" cy="160" r="2"/><circle cx="840" cy="150" r="2.5"/><circle cx="860" cy="155" r="2"/><circle cx="875" cy="170" r="2"/>
+    <circle cx="870" cy="190" r="2"/><circle cx="850" cy="200" r="2"/><circle cx="840" cy="215" r="1.5"/><circle cx="850" cy="228" r="1.5"/><circle cx="840" cy="235" r="2"/>
+  </g>
+
+  <!-- Sagittarius -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="580,80 600,65 620,70 615,90 595,95"/>
+    <line x1="600" y1="65" x2="605" y2="45"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="580" cy="80" r="2"/><circle cx="600" cy="65" r="2.5"/><circle cx="620" cy="70" r="2"/><circle cx="615" cy="90" r="2"/><circle cx="595" cy="95" r="2"/><circle cx="605" cy="45" r="2"/>
+  </g>
+
+  <!-- Capricorn -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="500,260 520,250 540,255 545,270 530,280 510,275 500,260"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="500" cy="260" r="2"/><circle cx="520" cy="250" r="2"/><circle cx="540" cy="255" r="2"/><circle cx="545" cy="270" r="1.5"/><circle cx="530" cy="280" r="1.5"/><circle cx="510" cy="275" r="2"/>
+  </g>
+
+  <!-- Aquarius -->
+  <g opacity="0.4" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="870,290 890,300 910,290 930,300"/>
+    <polyline points="870,310 890,320 910,310 930,320"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="870" cy="290" r="2"/><circle cx="910" cy="290" r="2"/><circle cx="870" cy="310" r="2"/><circle cx="910" cy="310" r="2"/>
+  </g>
+
+  <!-- Pisces -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="920,190 935,180 945,185 940,200"/>
+    <polyline points="950,185 965,178 975,185 970,200"/>
+    <line x1="945" y1="185" x2="950" y2="185"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="920" cy="190" r="1.5"/><circle cx="935" cy="180" r="2"/><circle cx="945" cy="185" r="1.5"/>
+    <circle cx="950" cy="185" r="1.5"/><circle cx="965" cy="178" r="2"/><circle cx="975" cy="185" r="1.5"/>
+  </g>
+
+  <!-- Cancer -->
+  <g opacity="0.4" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <polyline points="100,290 115,280 130,285 120,300 105,305"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="100" cy="290" r="1.5"/><circle cx="115" cy="280" r="2"/><circle cx="130" cy="285" r="1.5"/><circle cx="120" cy="300" r="1.5"/><circle cx="105" cy="305" r="1.5"/>
+  </g>
+
+  <!-- Libra -->
+  <g opacity="0.45" filter="url(#lineGlow)" stroke="#c8b870" stroke-width="0.8" fill="none">
+    <line x1="720" y1="290" x2="760" y2="290"/>
+    <line x1="740" y1="290" x2="740" y2="270"/>
+    <line x1="720" y1="270" x2="760" y2="270"/>
+  </g>
+  <g fill="#e8d890" filter="url(#starGlow)">
+    <circle cx="720" cy="290" r="2"/><circle cx="760" cy="290" r="2"/><circle cx="720" cy="270" r="2"/><circle cx="760" cy="270" r="2"/><circle cx="740" cy="280" r="1.5"/>
+  </g>
+</svg>
+
+<!-- Constellation labels -->
+<div class="const-label" style="top:18%;left:10%;">Καρκίνος</div>
+<div class="const-label" style="top:14%;left:22%;">Δίδυμος</div>
+<div class="const-label" style="top:10%;left:37%;">Λέων</div>
+<div class="const-label" style="top:12%;left:55%;">Τοξότης</div>
+<div class="const-label" style="top:18%;left:70%;">Σκορπιός</div>
+<div class="const-label" style="top:28%;left:82%;">Ἰχθύες</div>
+<div class="const-label" style="top:35%;left:70%;">Ζυγός</div>
+<div class="const-label" style="top:33%;left:58%;">Παρθένος</div>
+<div class="const-label" style="top:28%;left:44%;">Αἰγόκερως</div>
+<div class="const-label" style="top:8%;left:12%;">Ταῦρος</div>
+<div class="const-label" style="top:40%;left:82%;">Σαγιττάριος</div>
+<div class="const-label" style="top:6%;left:72%;">Κριός</div>
+
+<div class="moon"></div>
+
+<!-- MAIN SCENE -->
+<div class="scene">
+  <div class="clock-wrap">
+    <div class="zodiac-disk">
+      <svg class="clock-svg" viewBox="0 0 500 500">
+        <defs>
+          <radialGradient id="diskGrad" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#c8a840" stop-opacity="0.6"/>
+            <stop offset="100%" stop-color="#1a1408" stop-opacity="0"/>
+          </radialGradient>
+
+          <filter id="goldGlow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+
+          <filter id="embossGlow">
+            <feGaussianBlur stdDeviation="1" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+
+        <!-- Outer rings -->
+        <circle cx="250" cy="250" r="245" fill="none" stroke="#c8a840" stroke-width="3" opacity="0.8"/>
+        <circle cx="250" cy="250" r="240" fill="none" stroke="#7a5c1e" stroke-width="1" opacity="0.6"/>
+        <circle cx="250" cy="250" r="200" fill="none" stroke="#a08030" stroke-width="2" opacity="0.7"/>
+        <circle cx="250" cy="250" r="198" fill="none" stroke="#6a4a10" stroke-width="1" opacity="0.5"/>
+
+        <!-- 12 dividers -->
+        <g stroke="#8a6820" stroke-width="1.5" opacity="0.8" filter="url(#goldGlow)">
+          <line x1="250" y1="5" x2="250" y2="50"/>
+          <line x1="250" y1="450" x2="250" y2="495"/>
+          <g transform="rotate(30,250,250)">
+            <line x1="250" y1="5" x2="250" y2="50"/>
+            <line x1="250" y1="450" x2="250" y2="495"/>
+          </g>
+          <g transform="rotate(60,250,250)">
+            <line x1="250" y1="5" x2="250" y2="50"/>
+            <line x1="250" y1="450" x2="250" y2="495"/>
+          </g>
+          <g transform="rotate(90,250,250)">
+            <line x1="250" y1="5" x2="250" y2="50"/>
+            <line x1="250" y1="450" x2="250" y2="495"/>
+          </g>
+          <g transform="rotate(120,250,250)">
+            <line x1="250" y1="5" x2="250" y2="50"/>
+            <line x1="250" y1="450" x2="250" y2="495"/>
+          </g>
+          <g transform="rotate(150,250,250)">
+            <line x1="250" y1="5" x2="250" y2="50"/>
+            <line x1="250" y1="450" x2="250" y2="495"/>
+          </g>
+        </g>
+
+        <!-- Zodiac symbols -->
+        <g font-family="serif" font-size="22" fill="#c8a840" filter="url(#goldGlow)" text-anchor="middle" dominant-baseline="central">
+          <text transform="rotate(90,250,250) translate(0,-222) rotate(-90)">♈</text>
+          <text transform="rotate(120,250,250) translate(0,-222) rotate(-120)">♉</text>
+          <text transform="rotate(150,250,250) translate(0,-222) rotate(-150)">♊</text>
+          <text transform="rotate(180,250,250) translate(0,-222) rotate(-180)">♋</text>
+          <text transform="rotate(210,250,250) translate(0,-222) rotate(-210)">♌</text>
+          <text transform="rotate(240,250,250) translate(0,-222) rotate(-240)">♍</text>
+          <text transform="rotate(270,250,250) translate(0,-222) rotate(-270)">♎</text>
+          <text transform="rotate(300,250,250) translate(0,-222) rotate(-300)">♏</text>
+          <text transform="rotate(330,250,250) translate(0,-222) rotate(-330)">♐</text>
+          <text transform="rotate(0,250,250) translate(0,-222) rotate(0)">♑</text>
+          <text transform="rotate(30,250,250) translate(0,-222) rotate(-30)">♒</text>
+          <text transform="rotate(60,250,250) translate(0,-222) rotate(-60)">♓</text>
+        </g>
+
+        <!-- Greek names -->
+        <g font-family="serif" font-size="9" fill="rgba(200,168,70,0.75)" text-anchor="middle">
+          <text transform="rotate(75,250,250) translate(250,35)">Κριός</text>
+          <text transform="rotate(105,250,250) translate(250,35)">Ταῦρος</text>
+          <text transform="rotate(135,250,250) translate(250,35)">Δίδυμος</text>
+          <text transform="rotate(165,250,250) translate(250,35)">Καρκίνος</text>
+          <text transform="rotate(195,250,250) translate(250,35)">Λέων</text>
+          <text transform="rotate(225,250,250) translate(250,35)">Παρθένος</text>
+          <text transform="rotate(255,250,250) translate(250,35)">Ζυγός</text>
+          <text transform="rotate(285,250,250) translate(250,35)">Σκορπιός</text>
+          <text transform="rotate(315,250,250) translate(250,35)">Τοξότης</text>
+          <text transform="rotate(345,250,250) translate(250,35)">Αἰγόκερως</text>
+          <text transform="rotate(15,250,250) translate(250,35)">Ὑδροχόος</text>
+          <text transform="rotate(45,250,250) translate(250,35)">Ἰχθύες</text>
+        </g>
+
+        <!-- Inner details -->
+        <circle cx="250" cy="250" r="155" fill="none" stroke="#8a6820" stroke-width="1" opacity="0.5"/>
+        <circle cx="250" cy="250" r="118" fill="none" stroke="#8a6820" stroke-width="1.5" opacity="0.6"/>
+
+        <!-- Roman numerals -->
+        <g font-family="'Cinzel', serif" font-size="18" fill="#e8c860" filter="url(#goldGlow)" text-anchor="middle" dominant-baseline="central" font-weight="700">
+          <text x="250" y="118">XII</text>
+          <text transform="rotate(30,250,250)" x="250" y="118">I</text>
+          <text transform="rotate(60,250,250)" x="250" y="118">II</text>
+          <text transform="rotate(90,250,250)" x="250" y="118">III</text>
+          <text transform="rotate(120,250,250)" x="250" y="118">IIII</text>
+          <text transform="rotate(150,250,250)" x="250" y="118">V</text>
+          <text transform="rotate(180,250,250)" x="250" y="118">VI</text>
+          <text transform="rotate(210,250,250)" x="250" y="118">VII</text>
+          <text transform="rotate(240,250,250)" x="250" y="118">VIII</text>
+          <text transform="rotate(270,250,250)" x="250" y="118">IX</text>
+          <text transform="rotate(300,250,250)" x="250" y="118">X</text>
+          <text transform="rotate(330,250,250)" x="250" y="118">XI</text>
+        </g>
+
+        <!-- Ticks -->
+        <g id="ticks"></g>
+
+        <!-- Decorative circles -->
+        <circle cx="250" cy="250" r="80" fill="none" stroke="#9a7a2a" stroke-width="0.5" opacity="0.4" stroke-dasharray="4,4"/>
+        <circle cx="250" cy="250" r="50" fill="none" stroke="#8a6a1a" stroke-width="0.5" opacity="0.3"/>
+
+        <!-- Subtle inner zodiac aura -->
+        <circle cx="250" cy="250" r="96" fill="none" stroke="rgba(255,224,140,0.15)" stroke-width="10"/>
+        <circle cx="250" cy="250" r="96" fill="none" stroke="rgba(255,224,140,0.22)" stroke-width="1" stroke-dasharray="2,8"/>
+
+        <!-- Overlay -->
+        <circle cx="250" cy="250" r="245" fill="url(#diskGrad)"/>
+      </svg>
+
+      <!-- Sundial / golden saint inspired core -->
+      <div class="hands-layer" id="handsLayer">
+        <div class="sundial-core">
+          <div class="solar-rays"></div>
+          <div class="gnomon-aura"></div>
+
+          <div class="hour-shadow" id="hourShadow"></div>
+
+          <div class="minute-solar" id="minuteSolar">
+            <div class="minute-solar-tip"></div>
+          </div>
+
+          <div class="second-orbit" id="secondOrbit">
+            <div class="second-orbit-dot"></div>
+          </div>
+
+          <div class="gnomon-spire"></div>
+          <div class="sun-seal"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pedestal">
+      <div class="pedestal-text">πάντα ῥεῖ</div>
+      <div class="pedestal-sub">すべては流れる</div>
+    </div>
+  </div>
+
+  <div class="date-display" id="dateDisplay"></div>
+</div>
+
+<script>
+// ─── STARFIELD ───────────────────────────────────────────────────
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = [];
+  const count = Math.max(420, Math.floor((canvas.width * canvas.height) / 3200));
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.8 + 0.3,
+      alpha: Math.random() * 0.7 + 0.3,
+      speed: Math.random() * 0.015 + 0.005,
+      phase: Math.random() * Math.PI * 2,
+      color:
+        Math.random() > 0.85 ? '#c8d8ff' :
+        Math.random() > 0.7 ? '#ffeedd' :
+        '#ffffff'
+    });
+  }
+}
+
+function drawStars(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#050a18';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  for (const s of stars) {
+    const a = s.alpha * (0.7 + 0.3 * Math.sin(t * s.speed + s.phase));
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = s.color;
+    ctx.globalAlpha = a;
+    ctx.fill();
+
+    if (s.r > 1.4) {
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 5);
+      grad.addColorStop(0, s.color);
+      grad.addColorStop(1, 'transparent');
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * 5, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.globalAlpha = a * 0.3;
+      ctx.fill();
+    }
+  }
+
+  ctx.globalAlpha = 1;
+}
+
+// ─── TICK MARKS (SVG) ────────────────────────────────────────────
+function buildTicks() {
+  const g = document.getElementById('ticks');
+  g.innerHTML = '';
+
+  for (let i = 0; i < 60; i++) {
+    const angle = (i * 6) * Math.PI / 180;
+    const isMajor = i % 5 === 0;
+    const r1 = isMajor ? 147 : 152;
+    const r2 = 157;
+
+    const x1 = 250 + r1 * Math.sin(angle);
+    const y1 = 250 - r1 * Math.cos(angle);
+    const x2 = 250 + r2 * Math.sin(angle);
+    const y2 = 250 - r2 * Math.cos(angle);
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', isMajor ? '#c8a840' : '#7a5c1e');
+    line.setAttribute('stroke-width', isMajor ? '2' : '1');
+    line.setAttribute('opacity', isMajor ? '0.9' : '0.5');
+    g.appendChild(line);
+  }
+}
+
+// ─── CLOCK ───────────────────────────────────────────────────────
+const hourShadow  = document.getElementById('hourShadow');
+const minuteSolar = document.getElementById('minuteSolar');
+const secondOrbit = document.getElementById('secondOrbit');
+const dateDisplay = document.getElementById('dateDisplay');
+
+const MONTH_NAMES = [
+  'IANUARIUS','FEBRUARIUS','MARTIUS','APRILIS','MAIUS','IUNIUS',
+  'IULIUS','AUGUSTUS','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'
+];
+
+function updateClock() {
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const ms = now.getMilliseconds();
+
+  const sDeg = (s + ms / 1000) * 6;
+  const mDeg = (m + (s + ms / 1000) / 60) * 6;
+  const hDeg = ((h % 12) + m / 60 + s / 3600) * 30;
+
+  hourShadow.style.transform  = `translateX(-50%) rotate(${hDeg}deg) skewX(-10deg)`;
+  minuteSolar.style.transform = `translateX(-50%) rotate(${mDeg}deg)`;
+  secondOrbit.style.transform = `translate(-50%, -50%) rotate(${sDeg}deg)`;
+
+  dateDisplay.textContent =
+    `${MONTH_NAMES[now.getMonth()]} · ${now.getDate()} · ANNO ${now.getFullYear()}`;
+}
+
+// ─── ANIMATION LOOP ──────────────────────────────────────────────
+let lastClockTick = 0;
+
+function loop(t) {
+  requestAnimationFrame(loop);
+  drawStars(t);
+
+  if (t - lastClockTick > 40) {
+    updateClock();
+    lastClockTick = t;
+  }
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+resizeCanvas();
+initStars();
+buildTicks();
+updateClock();
+requestAnimationFrame(loop);
+
+window.addEventListener('resize', () => {
+  resizeCanvas();
+  initStars();
+});
+</script>
+</body>
+</html>
